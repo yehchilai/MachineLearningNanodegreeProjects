@@ -247,8 +247,8 @@ vs.ModelComplexity(X_train, y_train)
 # **Hint:** High bias is a sign of underfitting(model is not complex enough to pick up the nuances in the data) and high variance is a sign of overfitting(model is by-hearting the data and cannot generalize well). Think about which model(depth 1 or 10) aligns with which part of the tradeoff.
 
 # **Answer: **
-# - **max_depth = 1: ** high bias.
-# - **max_depth = 10:** high variance.
+# - **max_depth = 1: ** high bias. Both training score and validation score are low. It means this model paid little attention in training progress, so both scores are low. This situation is called underfitting.
+# - **max_depth = 10:** high variance. The model provides a high score in training data, but a low score in validating data. It means this model paid too much attention to fit the training model. This situation is called overfitting.
 
 # ### Question 6 - Best-Guess Optimal Model
 # * Which maximum depth do you think results in a model that best generalizes to unseen data? 
@@ -287,8 +287,8 @@ vs.ModelComplexity(X_train, y_train)
 # When thinking about how k-fold cross validation helps grid search, think about the main drawbacks of grid search which are hinged upon **using a particular subset of data for training or testing** and how k-fold cv could help alleviate that. You can refer to the [docs](http://scikit-learn.org/stable/modules/cross_validation.html#cross-validation) for your answer.
 
 # **Answer: **
-# - k-fold: The k-fold cross-validation is the technique that splits the training data into k subsets. For each training iteration, the algorithm will increase the number of subsets from 1 subset to (k-1) subsets. For example, the algorithm uses 2 subsets for training the model and use the rest of training data which is (k-2) subsets to validate the model.
-# - When we use the grid search, we can get proper parameters. Then, we can use k-fold cross-validation to test whether the model is good enough because we know the amount of training data can affects the model. The more data we put into the test, the more sophisticated model we will have.
+# - k-fold: The k-fold cross-validation is the technique that splits the training data into k subsets. For each training iteration, the algorithm will select one subset as validation data and use (k-1) subsets as training data. For example, in the first iteration, the algorithm select the first subset to validate the model and use the rest of subsets training the model which contains (k-1) subsets. In the second iteration, it selects the second subsets to validate the model and use the rest of (k-1) subsets training the model. There will be k iteration to generate an average score and we use this score to know how good this model is.
+# - When we use the grid search, we will use different pairs of parameters. In each pair of parameters, we use k-fold cross-validation to test whether the model is good enough.
 
 # ### Implementation: Fitting a Model
 # Your final implementation requires that you bring everything together and train a model using the **decision tree algorithm**. To ensure that you are producing an optimized model, you will train the model using the grid search technique to optimize the `'max_depth'` parameter for the decision tree. The `'max_depth'` parameter can be thought of as how many questions the decision tree algorithm is allowed to ask about the data before making a prediction. Decision trees are part of a class of algorithms called *supervised learning algorithms*.
@@ -307,7 +307,7 @@ vs.ModelComplexity(X_train, y_train)
 #   - Pass the variables `'regressor'`, `'params'`, `'scoring_fnc'`, and `'cv_sets'` as parameters to the object. 
 #   - Assign the `GridSearchCV` object to the `'grid'` variable.
 
-# In[28]:
+# In[36]:
 
 """ This code is using sklearn 0.18 """
 # TODO: Import 'make_scorer', 'DecisionTreeRegressor', and 'GridSearchCV'
@@ -338,10 +338,13 @@ def fit_model(X, y):
     # Make sure to include the right parameters in the object:
     # (estimator, param_grid, scoring, cv) which have values 'regressor', 'params', 'scoring_fnc', and 'cv_sets' respectively.
     grid = GridSearchCV(regressor, param_grid=params, scoring=scoring_fnc, cv=cv_sets)
-
+    
     # Fit the grid search object to the data to compute the optimal model
     grid = grid.fit(X, y)
-
+    
+    # print fitting model result
+    result = pd.DataFrame(grid.cv_results_)
+#     print result
     # Return the optimal model after fitting the data
     return grid.best_estimator_
 fit_model(features, prices)
