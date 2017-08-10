@@ -101,10 +101,40 @@ print prices.describe()
 # * Would you expect a neighborhood that has an `'LSTAT'` value(percent of lower class workers) of 15 have home prices be worth more or less than a neighborhood that has an `'LSTAT'` value of 20?
 # * Would you expect a neighborhood that has an `'PTRATIO'` value(ratio of students to teachers) of 10 have home prices be worth more or less than a neighborhood that has an `'PTRATIO'` value of 15?
 
-# **Answer: **
+# **Answer: ** 
+#   
+# Base on the following **CODES** and the **IMAGES** we can know that
 # - **RM:** The higher RE value will increase the value of MEDV.
 # - **LSTAT:** The higher LSTAT value will decrease the value of MEDV.
 # - **PTRATIO:** The higher PTRATIO value will decrease the value of MEDV.
+
+# In[57]:
+
+from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as pl
+# print prices
+# print type(prices)
+x = prices.values.reshape(-1, 1)
+# print x
+# print type(x)
+y_RM = features['RM']
+y_LSTAT = features['LSTAT']
+y_PTRATIO = features['PTRATIO']
+
+def drawRegression(price, feature, y_name):
+    reg = LinearRegression()
+#     print 'price length: ', len(price)
+#     print 'feature length: ', len(feature)
+    reg.fit(price, feature)
+    pl.plot(price, reg.predict(price), color='red', linewidth=1)
+    pl.scatter(price, feature, alpha=0.5, c=price)
+    pl.xlabel('price')
+    pl.ylabel(y_name)
+    pl.show()
+drawRegression(x, y_RM, 'RM')
+drawRegression(x, y_LSTAT, 'LSTAT')
+drawRegression(x, y_PTRATIO, 'PTRATIO')
+
 
 # ----
 # 
@@ -120,7 +150,7 @@ print prices.describe()
 # - Use `r2_score` from `sklearn.metrics` to perform a performance calculation between `y_true` and `y_predict`.
 # - Assign the performance score to the `score` variable.
 
-# In[18]:
+# In[76]:
 
 # TODO: Import 'r2_score'
 from sklearn.metrics import r2_score
@@ -149,11 +179,26 @@ def performance_metric(y_true, y_predict):
 # 
 # Run the code cell below to use the `performance_metric` function and calculate this model's coefficient of determination.
 
-# In[19]:
+# In[77]:
 
 # Calculate the performance of this model
 score = performance_metric([3, -0.5, 2, 7, 4.2], [2.5, 0.0, 2.1, 7.8, 5.3])
 print "Model has a coefficient of determination, R^2, of {:.3f}.".format(score)
+# plot result
+y_true = [3, -0.5, 2, 7, 4.2]
+y_predict = [2.5, 0.0, 2.1, 7.8, 5.3]
+# plot true and predict values
+true_handler = pl.scatter(y_true, y_true, alpha=0.6, color='blue', label='true')
+predict_handler = pl.scatter(y_true, y_predict, alpha=0.6, color='red', label='predict')
+# plot reference line
+fit = np.poly1d(np.polyfit(y_true, y_true, 1))
+lims = np.linspace(min(y_true)-1, max(y_true)+1)
+# plot legend
+pl.legend(handles=[true_handler, predict_handler],loc='upper left')
+
+pl.plot(lims, fit(lims), alpha=0.3, color='black')
+
+pl.show()
 
 
 # * Would you consider this model to have successfully captured the variation of the target variable? 
@@ -177,11 +222,11 @@ print "Model has a coefficient of determination, R^2, of {:.3f}.".format(score)
 #   - Set the `random_state` for `train_test_split` to a value of your choice. This ensures results are consistent.
 # - Assign the train and testing splits to `X_train`, `X_test`, `y_train`, and `y_test`.
 
-# In[20]:
+# In[72]:
 
 # TODO: Import 'train_test_split'
 from sklearn.cross_validation import train_test_split
-features_trian, features_test, labels_train, labels_test = train_test_split(features, prices, test_size=0.2)
+features_trian, features_test, labels_train, labels_test = train_test_split(features, prices, test_size=0.2, random_state=7)
 
 # TODO: Shuffle and split the data into training and testing subsets
 X_train, X_test, y_train, y_test = (features_trian, features_test, labels_train, labels_test)
@@ -199,6 +244,8 @@ print "Training and testing split was successful."
 # **Answer: **
 # We can use the training and testing subsets to validate our prediction model. 
 # When we use the training subsets to build a model, we can use the testing subset to validate whether the model works well or not. Iterating this step, we can compare our models with different algorithms or parameters, and then we can choose the best one to be our prediction model.
+# - If we do not split data and put all data to train the model, we will get a descriptive model. The descriptive model is not for prediction.
+# - To get a predictive model, we need an unseen dataset to test our model. That is why we split our datasets into two subsets.
 
 # ----
 # 
@@ -210,7 +257,7 @@ print "Training and testing split was successful."
 # 
 # Run the code cell below and use these graphs to answer the following question.
 
-# In[21]:
+# In[73]:
 
 # Produce learning curves for varying training set sizes and maximum depths
 vs.ModelLearning(features, prices)
@@ -229,13 +276,15 @@ vs.ModelLearning(features, prices)
 # - **Curve:** The more training points are added, the lower score the training curve has and the higher score the testing curve has.
 # - We can see the trending of two curves and think theirs converge. If we add more training points, the value between two curves would not change. Because of this, it does not benefit this model if we add more training points.
 # - **This model:** Based on learning curves in these four depths, we can have the best model when the max depth is equal to 3. If the depth less than 3, the model is underfitting or high bias. If the depth higher than 3, the model is overfitting or high variance. 
+# 
+# Notice that it's easy for any model to memorize a few training points, that's why there's a large gap between training and testing accuracy with a small training size. As more points are added, it's increasingly difficult for the model to memorize all data points, and it starts to learn how to generalize instead.
 
 # ### Complexity Curves
 # The following code cell produces a graph for a decision tree model that has been trained and validated on the training data using different maximum depths. The graph produces two complexity curves — one for training and one for validation. Similar to the **learning curves**, the shaded regions of both the complexity curves denote the uncertainty in those curves, and the model is scored on both the training and validation sets using the `performance_metric` function.  
 # 
 # ** Run the code cell below and use this graph to answer the following two questions Q5 and Q6. **
 
-# In[22]:
+# In[74]:
 
 vs.ModelComplexity(X_train, y_train)
 
@@ -248,7 +297,10 @@ vs.ModelComplexity(X_train, y_train)
 
 # **Answer: **
 # - **max_depth = 1: ** high bias. Both training score and validation score are low. It means this model paid little attention in training progress, so both scores are low. This situation is called underfitting.
-# - **max_depth = 10:** high variance. The model provides a high score in training data, but a low score in validating data. It means this model paid too much attention to fit the training model. This situation is called overfitting.
+# - **max_depth = 10:** high variance. The model provides a high score in training data, but a low score in validating data. It means this model paid too much attention to fit the training model. This situation is called overfitting.  
+# 
+# In short, high bias means the model isn't complex enough to learn the patterns in the data, resulting in low performance on both the training and validation datasets.  
+# On the other hand, high variance means the model starts to learn random noise, losing its capacity to generalize previously unseen data, resulting in a very high training score but low testing score.
 
 # ### Question 6 - Best-Guess Optimal Model
 # * Which maximum depth do you think results in a model that best generalizes to unseen data? 
@@ -259,6 +311,8 @@ vs.ModelComplexity(X_train, y_train)
 # **Answer: **
 # - **Best depth:** When the max_depth is equal to 4.
 # - This model has the best outcome because it has the highest score and is not overfitting.
+# 
+# The curve also shows a high validation score for max_depth = 5, but I'd still pick the above considering Occam's Razor which applied here basically means that for two or more equivalent answers, the simplest one is the correct one.
 # 
 
 # -----
@@ -275,6 +329,14 @@ vs.ModelComplexity(X_train, y_train)
 # **Answer: **
 # - The grid searh is a method to get the best model with proper parameters.
 # - If we use SVM model, there are many different parameters we can use. For instance, the kernal functions, the C, degrees, gamma, and so on affact the model itself. The grid search is able to find a better combination of these parameters and provides us a sophisticated model.
+# - For example, if we give param_grid = [
+#   {'C': [1, 10, 100, 1000], 'kernel': ['linear']},
+#   {'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
+#  ], we can have several hyper-parameters.  
+#  In this SVM example, the grid search runs the linear kernel first in the C values in [1, 10, 100, 1000].  
+#  Then, it runs the rbf kernel in C values in [1, 10, 100, 1000] and gamma values in [0.001, 0.0001].  
+#  To evaluate which hyper-paramerters is better, we provide the estimator which is SVM, and the score function. Finally, we can have the best hyper-parameter based on the best score and the simplest function. 
+#  
 
 # ### Question 8 - Cross-Validation
 # 
@@ -288,7 +350,7 @@ vs.ModelComplexity(X_train, y_train)
 
 # **Answer: **
 # - k-fold: The k-fold cross-validation is the technique that splits the training data into k subsets. For each training iteration, the algorithm will select one subset as validation data and use (k-1) subsets as training data. For example, in the first iteration, the algorithm select the first subset to validate the model and use the rest of subsets training the model which contains (k-1) subsets. In the second iteration, it selects the second subsets to validate the model and use the rest of (k-1) subsets training the model. There will be k iteration to generate an average score and we use this score to know how good this model is.
-# - When we use the grid search, we will use different pairs of parameters. In each pair of parameters, we use k-fold cross-validation to test whether the model is good enough.
+# - When we use the grid search, we will use different pairs of parameters. In each pair of parameters, we use k-fold cross-validation to get the score of this particular parameter combination. Through this process, we can get the best generalised predictive model.
 
 # ### Implementation: Fitting a Model
 # Your final implementation requires that you bring everything together and train a model using the **decision tree algorithm**. To ensure that you are producing an optimized model, you will train the model using the grid search technique to optimize the `'max_depth'` parameter for the decision tree. The `'max_depth'` parameter can be thought of as how many questions the decision tree algorithm is allowed to ask about the data before making a prediction. Decision trees are part of a class of algorithms called *supervised learning algorithms*.
@@ -307,7 +369,7 @@ vs.ModelComplexity(X_train, y_train)
 #   - Pass the variables `'regressor'`, `'params'`, `'scoring_fnc'`, and `'cv_sets'` as parameters to the object. 
 #   - Assign the `GridSearchCV` object to the `'grid'` variable.
 
-# In[36]:
+# In[78]:
 
 """ This code is using sklearn 0.18 """
 # TODO: Import 'make_scorer', 'DecisionTreeRegressor', and 'GridSearchCV'
@@ -329,7 +391,7 @@ def fit_model(X, y):
     regressor = DecisionTreeRegressor()
 
     # TODO: Create a dictionary for the parameter 'max_depth' with a range from 1 to 10
-    params = {'max_depth': [1,2,3,4,5,6,7,8,9,10]}
+    params = {'max_depth': range(1,11)}#{'max_depth': [1,2,3,4,5,6,7,8,9,10]}
 
     # TODO: Transform 'performance_metric' into a scoring function using 'make_scorer' 
     scoring_fnc = make_scorer(performance_metric)
@@ -359,7 +421,7 @@ fit_model(features, prices)
 # 
 # Run the code block below to fit the decision tree regressor to the training data and produce an optimal model.
 
-# In[29]:
+# In[80]:
 
 # Fit the training data to the model using grid search
 reg = fit_model(X_train, y_train)
@@ -388,7 +450,7 @@ print "Parameter 'max_depth' is {} for the optimal model.".format(reg.get_params
 # 
 # Run the code block below to have your optimized model make predictions for each client's home.
 
-# In[30]:
+# In[81]:
 
 # Produce a matrix for client data
 client_data = [[5, 17, 15], # Client 1
@@ -399,17 +461,29 @@ client_data = [[5, 17, 15], # Client 1
 for i, price in enumerate(reg.predict(client_data)):
     print "Predicted selling price for Client {}'s home: ${:,.2f}".format(i+1, price)
 
+# Show plots
+clients = np.transpose(client_data)
+pred = reg.predict(client_data)
+for i, feat in enumerate(['RM','LSTAT','PTRATIO']):
+    pl.scatter(prices,features[feat],alpha=0.5, c = prices)
+    pl.scatter(pred, clients[i], color='black', marker='x', linewidth=2)
+    pl.xlabel('Price')
+    pl.ylabel(feat)
+    pl.show()
+
 
 # **Answer: **
 # - For Client 1: 316,050.00
 # - For Client 2: 233,228.57
 # - For Client 3: 933,660.00
-# - For CLient 1 and Client 2, the prices are under the mean price and over the mean minus two standard deviation price. It is reasonable. For Client 3, the price is over two standard devication plus mean and under the maximum value. It is still reasonable.  
-# Minimum price: 105,000.00  
+# - ~~For CLient 1 and Client 2, the prices are under the mean price and over the mean minus two standard deviation price. It is reasonable. For Client 3, the price is over two standard devication plus mean and under the maximum value. It is still reasonable.~~  
+# ~~Minimum price: 105,000.00  
 # Maximum price: 1,024,800.00  
 # Mean price: 454,342.94  
 # Median price 438,900.00  
-# Standard deviation of prices: 165,171.13  
+# Standard deviation of prices: 165,171.13~~  
+# 
+# According to the plots, all clients are in the range of thier condition. Because of it, the prices are reasonable. 
 
 # ### Sensitivity
 # An optimal model is not necessarily a robust model. Sometimes, a model is either too complex or too simple to sufficiently generalize to new data. Sometimes, a model could use a learning algorithm that is not appropriate for the structure of the data given. Other times, the data itself could be too noisy or contain too few samples to allow a model to adequately capture the target variable — i.e., the model is underfitted. 
