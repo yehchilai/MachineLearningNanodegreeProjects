@@ -104,9 +104,12 @@ print prices.describe()
 # **Answer: ** 
 #   
 # Base on the following **CODES** and the **IMAGES** we can know that
-# - **RM:** The higher RE value will increase the value of MEDV.
-# - **LSTAT:** The higher LSTAT value will decrease the value of MEDV.
-# - **PTRATIO:** The higher PTRATIO value will decrease the value of MEDV.
+# - **RM:** The higher RE value will increase the value of MEDV.  
+# The higher RE means there are more rooms in a house. Intuitively, the price, MEDV, should be higher. The first image confirms the idea.
+# - **LSTAT:** The higher LSTAT value will decrease the value of MEDV.  
+# The higher LSTAT means that more people in this area have low income. Usually, people who have low income would buy cheaper houses. The second image verifies the higher LSTAT contains lower MEDV, the price.
+# - **PTRATIO:** The higher PTRATIO value will decrease the value of MEDV.  
+# The higher PTARTIO means that a teacher has to take care of more students. The education quality will be not good when a teacher serves many students. Therefore, the higher PTARTIO means the poor education quality. The poor education quality usually makes the house price lower. The third image validates this thought.
 
 # In[57]:
 
@@ -246,6 +249,8 @@ print "Training and testing split was successful."
 # When we use the training subsets to build a model, we can use the testing subset to validate whether the model works well or not. Iterating this step, we can compare our models with different algorithms or parameters, and then we can choose the best one to be our prediction model.
 # - If we do not split data and put all data to train the model, we will get a descriptive model. The descriptive model is not for prediction.
 # - To get a predictive model, we need an unseen dataset to test our model. That is why we split our datasets into two subsets.
+# 
+# In short, we need a way to determine how well our model is doing! As we can get a good estimate of our generalization accuracy on this testing dataset. Since our main goal is to accurately predict on new unseen data. Also note that we can try and protect against overfitting with this independent dataset.
 
 # ----
 # 
@@ -274,7 +279,7 @@ vs.ModelLearning(features, prices)
 # **Answer: **
 # - **Top-right:** The maximum depth of the top-right picture is 3.
 # - **Curve:** The more training points are added, the lower score the training curve has and the higher score the testing curve has.
-# - We can see the trending of two curves and think theirs converge. If we add more training points, the value between two curves would not change. Because of this, it does not benefit this model if we add more training points.
+# - We can see the trending of two curves and think theirs converge. If we add more training points, the value between two curves would not change. Because of this, it does not benefit this model if we add more training points. In practice collecting more data can often be time consuming and/or expensive, so when we can avoid having to collect more data the better. Therefore sometimes receiving very minor increases in performance is not beneficial, which is why plotting these curves can be very critical at times.
 # - **This model:** Based on learning curves in these four depths, we can have the best model when the max depth is equal to 3. If the depth less than 3, the model is underfitting or high bias. If the depth higher than 3, the model is overfitting or high variance. 
 # 
 # Notice that it's easy for any model to memorize a few training points, that's why there's a large gap between training and testing accuracy with a small training size. As more points are added, it's increasingly difficult for the model to memorize all data points, and it starts to learn how to generalize instead.
@@ -336,6 +341,7 @@ vs.ModelComplexity(X_train, y_train)
 #  In this SVM example, the grid search runs the linear kernel first in the C values in [1, 10, 100, 1000].  
 #  Then, it runs the rbf kernel in C values in [1, 10, 100, 1000] and gamma values in [0.001, 0.0001].  
 #  To evaluate which hyper-paramerters is better, we provide the estimator which is SVM, and the score function. Finally, we can have the best hyper-parameter based on the best score and the simplest function. 
+# - The limitation of GridSearch is that it can be very computationally expensive when dealing with a large number of different hyperparameters and much bigger datasets. There are two other techniques that we could explore to validate our hyperparameters, RandomizedSearchCV or a train/validation/test split.
 #  
 
 # ### Question 8 - Cross-Validation
@@ -350,7 +356,9 @@ vs.ModelComplexity(X_train, y_train)
 
 # **Answer: **
 # - k-fold: The k-fold cross-validation is the technique that splits the training data into k subsets. For each training iteration, the algorithm will select one subset as validation data and use (k-1) subsets as training data. For example, in the first iteration, the algorithm select the first subset to validate the model and use the rest of subsets training the model which contains (k-1) subsets. In the second iteration, it selects the second subsets to validate the model and use the rest of (k-1) subsets training the model. There will be k iteration to generate an average score and we use this score to know how good this model is.
-# - When we use the grid search, we will use different pairs of parameters. In each pair of parameters, we use k-fold cross-validation to get the score of this particular parameter combination. Through this process, we can get the best generalised predictive model.
+# - When we try to optimize the model by grid search, we only use a simple train/test split(holdout method). In this case, the evaluation may significantly differ depending on how the division made.  
+# If we apply the k-fold cross validation instead of the holdout method, we will get an average evaluation value. This value can avoid the drawback of how the division made, and the variance of the evaluation will decrease when the k increases. 
+# 
 
 # ### Implementation: Fitting a Model
 # Your final implementation requires that you bring everything together and train a model using the **decision tree algorithm**. To ensure that you are producing an optimized model, you will train the model using the grid search technique to optimize the `'max_depth'` parameter for the decision tree. The `'max_depth'` parameter can be thought of as how many questions the decision tree algorithm is allowed to ask about the data before making a prediction. Decision trees are part of a class of algorithms called *supervised learning algorithms*.
@@ -388,6 +396,7 @@ def fit_model(X, y):
     cv_sets = ShuffleSplit(n_splits=10, test_size=0.1, train_size=None, random_state=None)
     
     # TODO: Create a decision tree regressor object
+#     regressor = DecisionTreeRegressor(random_state = "any number")
     regressor = DecisionTreeRegressor()
 
     # TODO: Create a dictionary for the parameter 'max_depth' with a range from 1 to 10
@@ -450,7 +459,7 @@ print "Parameter 'max_depth' is {} for the optimal model.".format(reg.get_params
 # 
 # Run the code block below to have your optimized model make predictions for each client's home.
 
-# In[81]:
+# In[88]:
 
 # Produce a matrix for client data
 client_data = [[5, 17, 15], # Client 1
@@ -461,6 +470,8 @@ client_data = [[5, 17, 15], # Client 1
 for i, price in enumerate(reg.predict(client_data)):
     print "Predicted selling price for Client {}'s home: ${:,.2f}".format(i+1, price)
 
+# show features status
+print features.describe()
 # Show plots
 clients = np.transpose(client_data)
 pred = reg.predict(client_data)
@@ -470,12 +481,17 @@ for i, feat in enumerate(['RM','LSTAT','PTRATIO']):
     pl.xlabel('Price')
     pl.ylabel(feat)
     pl.show()
+# pd.DataFrame(zip(X_train.columns, reg.feature_importances_)
+#              , columns=['feature', 'importance']).set_index('feature').plot(kind='bar')
 
 
 # **Answer: **
-# - For Client 1: 316,050.00
-# - For Client 2: 233,228.57
-# - For Client 3: 933,660.00
+# - For Client 1: 316,050.00  
+# The price seems reasonable. The RM is 5 which is under the 25% of the whole dataset, and we know that a lower RM has a lower price. The LSTAT is 17% which is about 75% of the whole dataset, and we know a higher LSTAT causes a lower prices. The PTRATIO is 15-to-1 which is under 25% of the dataset, and we know that a lower PTRATIO provides a higher price.
+# - For Client 2: 233,228.57  
+# The price seems reasonable. The RM is 4 which is colse to the minimum of the whole dataset, and we know that a lower RM has a lower price. The LSTAT is 32% which is over 75% of the whole dataset, and we know a higher LSTAT causes a lower prices. The PTRATIO is 22-to-1 which is maximum of the dataset, and we know that a higher PTRATIO provides a lower price.
+# - For Client 3: 933,660.00  
+# The price seems reasonable. The RM is 8 which is close to the maximum of the whole dataset, and we know that a higher RM has a higher price. The LSTAT is 3% which is close to the minimum of the whole dataset, and we know a lower LSTAT causes a higher price. The PTRATIO is 12-to-1 which is close to the minimum of the dataset, and we know that a lower PTRATIO provides a higher price.
 # - ~~For CLient 1 and Client 2, the prices are under the mean price and over the mean minus two standard deviation price. It is reasonable. For Client 3, the price is over two standard devication plus mean and under the maximum value. It is still reasonable.~~  
 # ~~Minimum price: 105,000.00  
 # Maximum price: 1,024,800.00  
