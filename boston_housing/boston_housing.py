@@ -360,6 +360,11 @@ vs.ModelComplexity(X_train, y_train)
 # If we apply the k-fold cross validation instead of the holdout method, we will get an average evaluation value. This value can avoid the drawback of how the division made, and the variance of the evaluation will decrease when the k increases. 
 # 
 
+# In[ ]:
+
+# Print print pd.DataFrame(grid.cv_results_) to check fit_model function
+
+
 # ### Implementation: Fitting a Model
 # Your final implementation requires that you bring everything together and train a model using the **decision tree algorithm**. To ensure that you are producing an optimized model, you will train the model using the grid search technique to optimize the `'max_depth'` parameter for the decision tree. The `'max_depth'` parameter can be thought of as how many questions the decision tree algorithm is allowed to ask about the data before making a prediction. Decision trees are part of a class of algorithms called *supervised learning algorithms*.
 # 
@@ -377,7 +382,7 @@ vs.ModelComplexity(X_train, y_train)
 #   - Pass the variables `'regressor'`, `'params'`, `'scoring_fnc'`, and `'cv_sets'` as parameters to the object. 
 #   - Assign the `GridSearchCV` object to the `'grid'` variable.
 
-# In[78]:
+# In[94]:
 
 """ This code is using sklearn 0.18 """
 # TODO: Import 'make_scorer', 'DecisionTreeRegressor', and 'GridSearchCV'
