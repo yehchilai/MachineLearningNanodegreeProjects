@@ -58,11 +58,12 @@ display(data.head(n=1))
 n_records = data['income'].count()
 
 # TODO: Number of records where individual's income is more than $50,000
-n_greater_50k = (data[data['income'] == '>50K'])['income'].count()
+# n_greater_50k = (data[data['income'] == '>50K'])['income'].count()
 # print (data[data['income'] > 50000]).head
 
 # TODO: Number of records where individual's income is at most $50,000
-n_at_most_50k = len(data[(data['income'] == '<=50K')])
+# n_at_most_50k = len(data[(data['income'] == '<=50K')])
+n_at_most_50k, n_greater_50k = data.income.value_counts()
 
 # TODO: Percentage of individuals whose income is more than $50,000
 greater_percent = (float(n_greater_50k)/float(n_records))*100
@@ -166,35 +167,31 @@ display(features_log_minmax_transform.head(n = 5))
 
 # TODO: One-hot encode the 'features_log_minmax_transform' data using pandas.get_dummies()
 features_final = pd.get_dummies(features_log_minmax_transform)
-#display(features_final.head(n=5))
+display(features_final.head(n=5))
 
 # TODO: Encode the 'income_raw' data to numerical values
-income = income_raw.copy(deep=True)
-for (index, value) in income.iteritems():
-#     print income[index]
-    if value == "<=50K":
-        income[index] = 0
-    else:
-        income[index] = 1
-#     print income[index]
+# income = income_raw.copy(deep=True)
+# for (index, value) in income.iteritems():
+#     if value == "<=50K":
+#         income[index] = 0
+#     else:
+#         income[index] = 1
+from sklearn.preprocessing import LabelEncoder
+labelEncoder = LabelEncoder()
+income = labelEncoder.fit_transform(income_raw)
+# print income
 
 # Print the number of features after one-hot encoding
 encoded = list(features_final.columns)
 print "{} total features after one-hot encoding.".format(len(encoded))
 
 # Uncomment the following line to see the encoded feature names
-print encoded
+# print encoded
 
 
 # In[7]:
 
-income.astype('int')
-print income.dtypes
-
-
-# In[8]:
-
-print income.head(n=5)
+display(income[:5]) 
 display(features_final.head(n = 5))
 
 
@@ -203,7 +200,7 @@ display(features_final.head(n = 5))
 # 
 # Run the code cell below to perform this split.
 
-# In[9]:
+# In[8]:
 
 # Import train_test_split
 from sklearn.model_selection import train_test_split
@@ -259,7 +256,7 @@ print "Testing set has {} labels.".format(y_test.shape[0])
 # * When we have a model that always predicts '1' (i.e. the individual makes more than 50k) then our model will have no True Negatives(TN) or False Negatives(FN) as we are not making any negative('0' value) predictions. Therefore our Accuracy in this case becomes the same as our Precision(True Positives/(True Positives + False Positives)) as every prediction that we have made with value '1' that should have '0' becomes a False Positive; therefore our denominator in this case is the total number of records we have in total. 
 # * Our Recall score(True Positives/(True Positives + False Negatives)) in this setting becomes 1 as we have no False Negatives.
 
-# In[10]:
+# In[9]:
 
 '''
 TP = np.sum(income) # Counting the ones as this is the naive case. Note that 'income' is the 'income_raw' data 
@@ -273,7 +270,7 @@ FN = 0 # No predicted negatives in the naive case
 TP = float(np.sum(income))
 # print TP
 # print income.count()
-FP = float(income.count() - TP)
+FP = float(income.size - TP)
 accuracy = TP/(TP+FP)
 recall = 1
 precision = accuracy
@@ -310,17 +307,17 @@ print "Naive Predictor: [Accuracy score: {:.4f}, F-score: {:.4f}]".format(accura
 # Structure your answer in the same format as above^, with 4 parts for each of the three models you pick. Please include references with your answer.
 
 # **Answer: **  
-# 1. Ensemble Methods(Random Forest) 
+# 1. Ensemble Methods(Random Forest) (http://scikit-learn.org/stable/modules/tree.html#tree, http://scikit-learn.org/stable/modules/ensemble.html#forest)
 #     * House price prediction. The house prediction requires different types of data, numerical and categorical. This algorithm can handle this mix-data type problem.
 #     * The Random Forest is a variation of the decision tree algorithm. The strength of this algorithm is that it contains the benefits of the original decision tree algorithm and reduce some overfitting issues. It can deal with numerical and categorical data in the same time, and it is a white box model which can be interpreted. When this decision tree type algorithm uses ensemble method, it can perform better. 
 #     * This algorithm is easily overfitting and needs to be careful tuning parameters. Since it is an ensemble algorithm, the computation time will be an issue. When data contains many features, it will be easy to overfit and perform poorly.
 #     * Even though the data has preprocessed by one-hot-encoding, it is still a numerical and categorical mixed data. This algorithm may be good at this type of data. One thing I am concerned is that there are too many features after the one-hot-encoding processes. I am not sure if it will be a significant issue.
-# 2. Stochastic Gradient Descent Classifier (SGDC) 
+# 2. Stochastic Gradient Descent Classifier (SGDC) (http://scikit-learn.org/stable/modules/sgd.html#sgd) 
 #     * If the data can be normalized in a specific case, we can have a try. This algorithm is good at normalized data.
 #     * The strength of this algorithm is that it is efficiency and ease of implementation. When the data is sparse, this algorithm can deal with large scale training examples and features.
 #     * The weakness of this algorithm is that we need to find out a regularization hyperparameters and the number of iterations. This issue will cause a lot of time to figure out a proper setting. Another issue is sensitiveness. When the data is not normalized, it is sensitive to feature scaling.
 #     * The data has normalized. I think this algorithm will be a good candidate.
-# 3. Support Vector Machines (SVM)  
+# 3. Support Vector Machines (SVM) (http://scikit-learn.org/stable/modules/svm.html#svm-classification)  
 #     * This algorithm can be used in the most case. We can use this as a baseline to start our research.
 #     * This algorithm is effective in high dimensional spaces and provides different kernel functions to meet different situations. When the proper kernel function is used, it performs best.
 #     * The weakness is the overfitting issue which will happen when the feature number is much larger than the sample number. When the feature number is much larger than the sample number, it performs poorly.
@@ -337,7 +334,7 @@ print "Naive Predictor: [Accuracy score: {:.4f}, F-score: {:.4f}]".format(accura
 #  - Calculate the F-score for both the training subset and testing set.
 #    - Make sure that you set the `beta` parameter!
 
-# In[11]:
+# In[10]:
 
 # TODO: Import two metrics from sklearn - fbeta_score and accuracy_score
 from sklearn.metrics import fbeta_score, accuracy_score
@@ -356,7 +353,7 @@ def train_predict(learner, sample_size, X_train, y_train, X_test, y_test):
     results = {}
     # TODO: Fit the learner to the training data using slicing with 'sample_size' using .fit(training_features[:], training_labels[:])
     start = time() # Get start time
-    learner = learner.fit(X_train[:sample_size], list(y_train[:sample_size].values))
+    learner = learner.fit(X_train[:sample_size], y_train[:sample_size])
     end = time() # Get end time
     # TODO: Calculate the training time
     results['train_time'] = end - start
@@ -372,16 +369,16 @@ def train_predict(learner, sample_size, X_train, y_train, X_test, y_test):
     results['pred_time'] = end - start
             
     # TODO: Compute accuracy on the first 300 training samples which is y_train[:300]
-    results['acc_train'] = accuracy_score(list(y_train[:300].values), predictions_train)
+    results['acc_train'] = accuracy_score(y_train[:300], predictions_train)
         
     # TODO: Compute accuracy on test set using accuracy_score()
-    results['acc_test'] = accuracy_score(list(y_test.values), predictions_test)
+    results['acc_test'] = accuracy_score(y_test, predictions_test)
     
     # TODO: Compute F-score on the the first 300 training samples using fbeta_score()
-    results['f_train'] = fbeta_score(list(y_train[:300].values), predictions_train, beta=0.5)
+    results['f_train'] = fbeta_score(y_train[:300], predictions_train, beta=0.5)
         
     # TODO: Compute F-score on the test set which is y_test
-    results['f_test'] = fbeta_score(list(y_test.values), predictions_test, beta=0.5)
+    results['f_test'] = fbeta_score(y_test, predictions_test, beta=0.5)
        
     # Success
     print "{} trained on {} samples.".format(learner.__class__.__name__, sample_size)
@@ -401,13 +398,15 @@ def train_predict(learner, sample_size, X_train, y_train, X_test, y_test):
 # 
 # **Note:** Depending on which algorithms you chose, the following implementation may take some time to run!
 
-# In[12]:
+# In[11]:
 
+'''
+This part is the validation which test algorithms I did not choose.
+'''
 # TODO: Import the three supervised learning models from sklearn
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
-
 
 # TODO: Initialize the three models
 clf_A = GaussianNB() # Gaussian Naive Bayes (GaussianNB)
@@ -434,8 +433,11 @@ for clf in [clf_A, clf_B, clf_C]:
 vs.evaluate(results_valid_assumption, accuracy, fscore)
 
 
-# In[13]:
+# In[12]:
 
+'''
+Algorithms I choose are shown below.
+'''
 # TODO: Import the three supervised learning models from sklearn
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import SGDClassifier
@@ -466,7 +468,7 @@ for clf in [clf_A, clf_B, clf_C]:
 vs.evaluate(results, accuracy, fscore)
 
 
-# In[14]:
+# In[13]:
 
 import pprint as pp
 print 'RandomForestClassifier:'
@@ -492,8 +494,8 @@ print pp.pprint(results['SVC'][2])
 # * the algorithm's suitability for the data.
 
 # **Answer: **
-# * Ensemble Methods(Random Forest) has the highest F score, 0.6786.
-# * The prediction time is 0.0564 sec, and the training time is 0.755 sec.
+# * Ensemble Methods(Random Forest) has the highest F score, 0.6731.
+# * The prediction time is 0.0545 sec, and the training time is 0.6738 sec.
 # * This algorithm is faster than I expected. It is obviously better than the previous naive prediction method. The F score is higher than 0.5. It shows that this algorithm may actually recognize this data set.
 
 # ### Question 4 - Describing the Model in Layman's Terms
@@ -505,8 +507,9 @@ print pp.pprint(results['SVC'][2])
 # When explaining your model, if using external resources please include all citations.
 
 # **Answer: **  
-#  The fundamental idea of this model is a decision tree. Based on the feature condition, we made a decision path to provide a prediction. In this case, the model randomly selects a feature as a root point, then selects the next feature, and so on until the last feature. Based on this decision tree, we can have labels to know the result on the end of a path.  
-#  However, the root affects the result because the root feature will cause a poor outcome if the root feature is not good at splitting data. That's why we use ensemble method here. Ensemble decision tree, Random Forest, is able to repeat the process many times, and have multiple decision trees which start from different root features. This method can reduce the root effect, but cause more computation time. 
+# &nbsp;&nbsp;&nbsp;&nbsp;The fundamental idea of this model is a decision tree. Based on the feature condition, we made a decision path to provide a prediction. A feature can be any data set in data. For example, age is a data set which can be a feature for training the model. The decision tree starts at a feature(age), goes to the next features(education), and keep going until the last feature. However, how to decide the root feature is random. Intuitively, we can know the first feature would affect the result since if the first feature is not good at splitting the data into good subsets, the model will provide a good prediction. This is a disadvantage using the decision tree algorithm. By using the decision tree, we can have labels to know the result on the end of a path.  
+# &nbsp;&nbsp;&nbsp;&nbsp;We know that the root affects the result because the root feature will cause a poor outcome if the root feature is not good at splitting data. That's why we use ensemble method here. Ensemble decision tree, Random Forest, is able to repeat the process many times, and have multiple decision trees which start from different root features.  
+# &nbsp;&nbsp;&nbsp;&nbsp;There are two typical ways to using ensemble method. One is averaging method and the other is boosting method. Random Forest uses the averaging method which builds multiple estimators, decision trees, independently and averages their prediction. The boosting method is used by algorithms such as AdaBoost, Gradient Tree Boost, and so on. This method builds sequentially and one tries to reduce the bias of the combined estimator. The idea of Boosting is combining several weak models to generate a powerful ensemble. In our case, the averaging method can reduce the root effect, but cause more computation time.  
 
 # ### Implementation: Model Tuning
 # Fine tune the chosen model. Use grid search (`GridSearchCV`) with at least one important parameter tuned with at least 3 different values. You will need to use the entire training set for this. In the code cell below, you will need to implement the following:
@@ -522,7 +525,7 @@ print pp.pprint(results['SVC'][2])
 # 
 # **Note:** Depending on the algorithm chosen and the parameter list, the following implementation may take some time to run!
 
-# In[15]:
+# In[14]:
 
 # TODO: Import 'GridSearchCV', 'make_scorer', and any other necessary libraries
 from sklearn.grid_search import GridSearchCV
@@ -541,22 +544,60 @@ scorer = make_scorer(fbeta_score, beta=0.5)
 grid_obj = GridSearchCV(estimator=clf, param_grid=parameters, scoring=scorer)
 
 # TODO: Fit the grid search object to the training data and find the optimal parameters using fit()
-grid_fit = grid_obj.fit(X_train, list(y_train.values))
+grid_fit = grid_obj.fit(X_train, y_train)
 
 # Get the estimator
 best_clf = grid_fit.best_estimator_
 
 # Make predictions using the unoptimized and model
-predictions = (clf.fit(X_train, list(y_train.values))).predict(X_test)
+predictions = (clf.fit(X_train, y_train)).predict(X_test)
 best_predictions = best_clf.predict(X_test)
 
 # Report the before-and-afterscores
 print "Unoptimized model\n------"
-print "Accuracy score on testing data: {:.4f}".format(accuracy_score(list(y_test.values), predictions))
-print "F-score on testing data: {:.4f}".format(fbeta_score(list(y_test.values), predictions, beta = 0.5))
+print "Accuracy score on testing data: {:.4f}".format(accuracy_score(y_test, predictions))
+print "F-score on testing data: {:.4f}".format(fbeta_score(y_test, predictions, beta = 0.5))
 print "\nOptimized Model\n------"
-print "Final accuracy score on the testing data: {:.4f}".format(accuracy_score(list(y_test.values), best_predictions))
-print "Final F-score on the testing data: {:.4f}".format(fbeta_score(list(y_test.values), best_predictions, beta = 0.5))
+print "Final accuracy score on the testing data: {:.4f}".format(accuracy_score(y_test, best_predictions))
+print "Final F-score on the testing data: {:.4f}".format(fbeta_score(y_test, best_predictions, beta = 0.5))
+
+
+# In[15]:
+
+# RandomizedSearchCV 
+from sklearn.model_selection import RandomizedSearchCV 
+from scipy.stats import randint as sp_randint
+
+# TODO: Initialize the classifier
+clf_random = RandomForestClassifier()
+
+# TODO: Create the parameters list you wish to tune, using a dictionary if needed.
+# HINT: parameters = {'parameter_1': [value1, value2], 'parameter_2': [value1, value2]}
+param_dist = {'n_estimators':sp_randint(10,500), 'min_samples_split':sp_randint(2,10)}
+
+# TODO: Make an fbeta_score scoring object using make_scorer()
+scorer = make_scorer(fbeta_score, beta=0.5)
+
+# TODO: Perform grid search on the classifier using 'scorer' as the scoring method using GridSearchCV()
+grid_obj_random = RandomizedSearchCV(estimator=clf_random, param_distributions=param_dist, scoring=scorer)
+
+# TODO: Fit the grid search object to the training data and find the optimal parameters using fit()
+grid_fit_random = grid_obj_random.fit(X_train, y_train)
+
+# Get the estimator
+best_clf_random = grid_fit_random.best_estimator_
+
+# Make predictions using the unoptimized and model
+predictions_random = (clf_random.fit(X_train, y_train)).predict(X_test)
+best_predictions_random = best_clf_random.predict(X_test)
+
+# Report the before-and-afterscores
+print "Unoptimized model\n------"
+print "Accuracy score on testing data: {:.4f}".format(accuracy_score(y_test, predictions_random))
+print "F-score on testing data: {:.4f}".format(fbeta_score(y_test, predictions_random, beta = 0.5))
+print "\nOptimized Model\n------"
+print "Final accuracy score on the testing data: {:.4f}".format(accuracy_score(y_test, best_predictions_random))
+print "Final F-score on the testing data: {:.4f}".format(fbeta_score(y_test, best_predictions_random, beta = 0.5))
 
 
 # ### Question 5 - Final Model Evaluation
@@ -577,13 +618,13 @@ print "Final F-score on the testing data: {:.4f}".format(fbeta_score(list(y_test
 
 # **Answer: **
 # 
-# |     Metric     | Benchmark Predictor | Unoptimized Model | Optimized Model |
-# | :------------: | :-----------------: | :---------------: | :-------------: | 
-# | Accuracy Score |       0.2478        |      0.8377       |   0.8504        |
-# | F-score        |       0.2917        |      0.6712       |   0.7015        |  
+# |     Metric     | Benchmark Predictor | Unoptimized Model | Optimized Model | Optimized Model (Randomized) |
+# | :------------: | :-----------------: | :---------------: | :-------------: | :--------------------------: | 
+# | Accuracy Score |       0.2478        |      0.8401       |   0.8517        |              0.8543          |
+# | F-score        |       0.2917        |      0.6777       |   0.7049        |              0.7111          |  
 # 
 # * The optimized model is better than the unoptimized model.
-# * It is much better than the predictor benchmarkers. The accuracy socre of the predictor benchmarkers is 0.2478, and the accuracy of the optimized model us 0.8504. The accuracy increase about 0.6. Moreover, the F-score of the benchmarkers is 0.2917, and the F-score of the Optimized model is 0.7015. The F-score increase about0.4
+# * It is much better than the predictor benchmarkers. The accuracy socre of the predictor benchmarkers is 0.2478, and the accuracy of the optimized model us 0.8517. The accuracy increase about 0.6. Moreover, the F-score of the benchmarkers is 0.2917, and the F-score of the Optimized model is 0.7049. The F-score increase about0.4
 
 # ----
 # ## Feature Importance
@@ -601,7 +642,32 @@ print "Final F-score on the testing data: {:.4f}".format(fbeta_score(list(y_test
 # * Age: Usually the older people gain more money.
 # * Education_level: The higher education level usually has a higher income.
 # * Capital-gain: If someone has a higher capital gain, it seems this person knows more about how to deal with finance. This type person usually has a higher salary.
-# * Capital-loss: If someone has a higher capital loss, it seems this person has no idea what to deal with finance. This type person usually has a lower salary.
+# * Capital-loss: I heard that people's Capital-loss is high because they probably are hedgers who routinely bet on both directions in a market. People who can be hedgers usually have a high income.
+
+# In[19]:
+
+'''
+Check the features' importance.
+'''
+# Occupation
+# income_group_list = [col for col in features_final if col.startswith('occupation')]
+# income_group = features_final[income_group_list]
+# income_group['income'] = data['income']
+# income_group = income_group.groupby('income')
+# income_group.mean().plot(kind='bar')
+# Age
+# income_group = data[['income','age']].groupby('income')
+# income_group.mean().plot(kind='bar')
+# Education_level
+# income_group = data[['income','education-level']].groupby('income')
+# income_group.mean().plot(kind='bar')
+# Capital-gain
+income_group = data[['income','capital-gain']].groupby('income')
+income_group.mean().plot(kind='bar')
+# Capital-loss
+income_group = data[['income','capital-loss']].groupby('income')
+income_group.mean().plot(kind='bar')
+
 
 # ### Implementation - Extracting Feature Importance
 # Choose a `scikit-learn` supervised learning algorithm that has a `feature_importance_` attribute availble for it. This attribute is a function that ranks the importance of each feature when making predictions based on the chosen algorithm.
@@ -611,13 +677,13 @@ print "Final F-score on the testing data: {:.4f}".format(fbeta_score(list(y_test
 #  - Train the supervised model on the entire training set.
 #  - Extract the feature importances using `'.feature_importances_'`.
 
-# In[16]:
+# In[20]:
 
 # TODO: Import a supervised learning model that has 'feature_importances_'
 from sklearn.ensemble import AdaBoostClassifier
 
 # TODO: Train the supervised model on the training set using .fit(X_train, y_train)
-model = AdaBoostClassifier(n_estimators=10).fit(X_train, list(y_train.values))
+model = AdaBoostClassifier(n_estimators=10).fit(X_train, y_train)
 
 # TODO: Extract the feature importances using .feature_importances_ 
 importances = model.feature_importances_
@@ -642,7 +708,7 @@ vs.feature_plot(importances, X_train, y_train)
 # ### Feature Selection
 # How does a model perform if we only use a subset of all the available features in the data? With less features required to train, the expectation is that training and prediction time is much lower — at the cost of performance metrics. From the visualization above, we see that the top five most important features contribute more than half of the importance of **all** features present in the data. This hints that we can attempt to *reduce the feature space* and simplify the information required for the model to learn. The code cell below will use the same optimized model you found earlier, and train it on the same training set *with only the top five important features*. 
 
-# In[18]:
+# In[21]:
 
 # Import functionality for cloning a model
 from sklearn.base import clone
@@ -652,18 +718,18 @@ X_train_reduced = X_train[X_train.columns.values[(np.argsort(importances)[::-1])
 X_test_reduced = X_test[X_test.columns.values[(np.argsort(importances)[::-1])[:5]]]
 
 # Train on the "best" model found from grid search earlier
-clf = (clone(best_clf)).fit(X_train_reduced,list(y_train.values) )
+clf = (clone(best_clf)).fit(X_train_reduced, y_train)
 
 # Make new predictions
 reduced_predictions = clf.predict(X_test_reduced)
 
 # Report scores from the final model using both versions of data
 print "Final Model trained on full data\n------"
-print "Accuracy on testing data: {:.4f}".format(accuracy_score(list(y_test.values), best_predictions))
-print "F-score on testing data: {:.4f}".format(fbeta_score(list(y_test.values), best_predictions, beta = 0.5))
+print "Accuracy on testing data: {:.4f}".format(accuracy_score(y_test, best_predictions))
+print "F-score on testing data: {:.4f}".format(fbeta_score(y_test, best_predictions, beta = 0.5))
 print "\nFinal Model trained on reduced data\n------"
-print "Accuracy on testing data: {:.4f}".format(accuracy_score(list(y_test.values), reduced_predictions))
-print "F-score on testing data: {:.4f}".format(fbeta_score(list(y_test.values), reduced_predictions, beta = 0.5))
+print "Accuracy on testing data: {:.4f}".format(accuracy_score(y_test, reduced_predictions))
+print "F-score on testing data: {:.4f}".format(fbeta_score(y_test, reduced_predictions, beta = 0.5))
 
 
 # ### Question 8 - Effects of Feature Selection
@@ -675,8 +741,8 @@ print "F-score on testing data: {:.4f}".format(fbeta_score(list(y_test.values), 
 # 
 # |     Metric     |      Full Data      |    Reduced Data  |
 # | :------------: | :-----------------: | :--------------: | 
-# | Accuracy Score |       0.8515        |      0.8126      |
-# | F-score        |       0.7042        |      0.6123      |
+# | Accuracy Score |       0.8517        |      0.8130      |
+# | F-score        |       0.7049        |      0.6135      |
 # 
 # * After reducing data, we have worse results including the accuracy score and F-score. Because of this, how to analyze the time and score is important. If we can reduce a lot of time and maintain acceptable scores, I will go reducing data. However, if the score drops a lot, I will not reduce data because the accurate prediction is the core of machine learning.
 
