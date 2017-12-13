@@ -23,7 +23,7 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set any additional class parameters as needed
-        self.trials = 0
+        self.trials = 1
 
     def reset(self, destination=None, testing=False):
         """ The reset function is called at the beginning of each trial.
@@ -47,7 +47,24 @@ class LearningAgent(Agent):
             # self.epsilon -= 0.05
             ######################################
             # Improved Q-learning: epsilion = a^t,for 0<a<1
-            self.epsilon = self.alpha**self.trials
+            # self.epsilon = self.alpha**self.trials
+            ######################################
+            # epsilion = 1/t^2
+            # self.epsilon = 1.0 / float(self.trials**2)
+            # self.trials += 1
+            #####################################
+            # epsilon = e ^ (-at), 0 < a < 1
+            # self.epsilon = math.exp(0 - self.alpha * self.trials)
+            # self.trials += 1
+            #####################################
+            # epsilon = cos(at), 0 < a < 1
+            # self.epsilon = math.cos(self.alpha*self.trials)
+            # self.trials += 1
+            #####################################
+            # Gompertz function: epsilon = a*e^(-b*e^(-c*t)), a = 1, b = -4 , c = -0.05
+            b = -4
+            c = -0.001
+            self.epsilon = 1 - math.exp(b * math.exp(c * self.trials))
             self.trials += 1
         return None
 
@@ -71,7 +88,8 @@ class LearningAgent(Agent):
         # With the hand-engineered features, this learning process gets entirely negated.
 
         # Set 'state' as a tuple of relevant data for the agent
-        state = (inputs['light'], waypoint)
+        # state = (waypoint, inputs['light'], inputs['oncoming'], inputs['left'], inputs['right'])
+        state = (waypoint, inputs['light'], inputs['oncoming'])
         # print "## state: {x}".format(x=state)
         return state
 
@@ -99,11 +117,12 @@ class LearningAgent(Agent):
         # If it is not, create a new dictionary for that state
         #   Then, for each action available, set the initial Q-value to 0.0
         #print self.stateString(state)
-        if not (str(state) in self.Q):
-            actionDic = {}
-            for a in self.valid_actions:
-                actionDic[a] = 0.0
-            self.Q[str(state)] = actionDic
+        if self.learning:
+            if not (str(state) in self.Q):
+                actionDic = {}
+                for a in self.valid_actions:
+                    actionDic[a] = 0.0
+                self.Q[str(state)] = actionDic
 
         return
 
@@ -160,7 +179,9 @@ class LearningAgent(Agent):
         # When learning, implement the value iteration update rule
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
         if self.learning:
-            self.Q[str(state)][action] += reward
+            #self.Q[str(state)][action] += reward
+            oldValue = self.Q[str(state)][action]
+            self.Q[str(state)][action] = oldValue + self.alpha * (reward + self.get_maxQ(state) - oldValue)
         return
 
 
@@ -195,7 +216,7 @@ def run():
     #   learning   - set to True to force the driving agent to use Q-learning
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
-    agent = env.create_agent(LearningAgent, learning=True, epsilon=1, alpha=0.7)
+    agent = env.create_agent(LearningAgent, learning=True, epsilon=1, alpha=0.5)
 
     ##############
     # Follow the driving agent
@@ -217,7 +238,7 @@ def run():
     # Flags:
     #   tolerance  - epsilon tolerance before beginning testing, default is 0.05
     #   n_test     - discrete number of testing trials to perform, default is 0
-    sim.run(n_test=10, tolerance=0.05)
+    sim.run(n_test=200, tolerance=0.05)
 
 
 if __name__ == '__main__':
