@@ -89,7 +89,7 @@ class LearningAgent(Agent):
 
         # Set 'state' as a tuple of relevant data for the agent
         # state = (waypoint, inputs['light'], inputs['oncoming'], inputs['left'], inputs['right'])
-        state = (waypoint, inputs['light'], inputs['oncoming'])
+        state = (waypoint, inputs['light'], inputs['oncoming'], inputs['left'])
         # print "## state: {x}".format(x=state)
         return state
 
@@ -180,8 +180,8 @@ class LearningAgent(Agent):
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
         if self.learning:
             #self.Q[str(state)][action] += reward
-            oldValue = self.Q[str(state)][action]
-            self.Q[str(state)][action] = oldValue + self.alpha * (reward + self.get_maxQ(state) - oldValue)
+            # oldValue = self.Q[str(state)][action]
+            self.Q[str(state)][action] += self.alpha * reward
         return
 
 
