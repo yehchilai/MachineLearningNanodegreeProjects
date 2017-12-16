@@ -155,7 +155,9 @@ class LearningAgent(Agent):
                 maxQActions = [k for k, v in actionDic.iteritems() if v == maxValue]
                 randomNumber = random.randint(0, len(maxQActions) - 1)
                 action = maxQActions[randomNumber]
-                # action = random.choice(maxQActions)
+                # optinal implementation
+                # best_actions = [action for action in self.valid_actions if self.Q[state][action] == max(self.Q[state].values())]
+                # action = random.choice(best_actions)
                 # print "### actions values: {x}".format(x=[ str(k)+': '+str(v) for k, v in actionDic.iteritems()])
                 # print "### maxQActions_action: {x}, len of actions: {y}, random number: {z}".format(x=action, y=len(maxQActions), z=randomNumber)
         else:
