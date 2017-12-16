@@ -155,6 +155,7 @@ class LearningAgent(Agent):
                 maxQActions = [k for k, v in actionDic.iteritems() if v == maxValue]
                 randomNumber = random.randint(0, len(maxQActions) - 1)
                 action = maxQActions[randomNumber]
+                # action = random.choice(maxQActions)
                 # print "### actions values: {x}".format(x=[ str(k)+': '+str(v) for k, v in actionDic.iteritems()])
                 # print "### maxQActions_action: {x}, len of actions: {y}, random number: {z}".format(x=action, y=len(maxQActions), z=randomNumber)
         else:
@@ -179,9 +180,8 @@ class LearningAgent(Agent):
         # When learning, implement the value iteration update rule
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
         if self.learning:
-            #self.Q[str(state)][action] += reward
-            # oldValue = self.Q[str(state)][action]
-            self.Q[str(state)][action] += self.alpha * reward
+            oldValue = self.Q[str(state)][action]
+            self.Q[str(state)][action] = oldValue + self.alpha *( reward - oldValue)
         return
 
 
