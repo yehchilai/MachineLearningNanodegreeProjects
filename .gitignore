@@ -6,4 +6,4 @@ dog-project-master/lfw/
 dog-project-master/saved_models/weights.best.from_scratch.hdf5
 dog-project-master/saved_models/weights.best.vgg16.hdf5
 dog-project-master/.ipynb_checkpoints/
-dog-project-master/bottleneck_features/DogVGG16Data.npz
+dog-project-master/bottleneck_features/
