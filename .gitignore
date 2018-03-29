@@ -3,7 +3,9 @@ practice_projects/cnn/cifar10-augmentation/aug_model.weights.best.hdf5
 practice_projects/cnn/cifar10-classification/model.weights.best.hdf5
 dog-project-master/dogImages/
 dog-project-master/lfw/
-dog-project-master/saved_models/weights.best.from_scratch.hdf5
-dog-project-master/saved_models/weights.best.vgg16.hdf5
+dog-project-master/saved_models/
+dog-project-master/images/
 dog-project-master/.ipynb_checkpoints/
 dog-project-master/bottleneck_features/
+capstone/data/
+capstone/else/
